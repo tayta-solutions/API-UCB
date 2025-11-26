@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: API de Gestão de Documentos
+  description: API PHP para login, usuários, pastas e documentos (upload/download).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/doc-manager-api
+    description: Servidor local de desenvolvimento
+
+paths:
+  /register:
+    post:
+      summary: Cadastro de usuário
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: Stephanny
+                email:
+                  type: string
+                  format: email
+                  example: steph@example.com
+                password:
+                  type: string
+                  format: password
+                  example: "123456"
+      responses:
+        '201':
+          description: Usuário cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Usuário cadastrado com sucesso
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      summary: Login do usuário
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: steph@example.com
+                password:
+                  type: string
+                  format: password
+                  example: "123456"
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login realizado com sucesso
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /folders:
+    get:
+      summary: Listar todas as pastas
+      tags: [Folders]
+      responses:
+        '200':
+          description: Lista de pastas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FolderListItem'
+    post:
+      summary: Criar nova pasta
+      tags: [Folders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: Projetos
+                created_by:
+                  type: integer
+                  nullable: true
+                  example: 1
+      responses:
+        '201':
+          description: Pasta criada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pasta criada com sucesso
+                  folder:
+                    $ref: '#/components/schemas/Folder'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /folders/{id}:
+    delete:
+      summary: Deletar uma pasta
+      tags: [Folders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID da pasta
+      responses:
+        '200':
+          description: Pasta deletada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pasta deletada com sucesso
+        '404':
+          description: Pasta não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /folders/{id}/documents:
+    get:
+      summary: Listar documentos de uma pasta
+      tags: [Folders, Documents]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID da pasta
+      responses:
+        '200':
+          description: Pasta e seus documentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folder:
+                    $ref: '#/components/schemas/FolderShort'
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentListItem'
+        '404':
+          description: Pasta não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /documents:
+    post:
+      summary: Upload de documento
+      tags: [Documents]
+      description: >
+        Faz upload de um documento e vincula a uma pasta.
+        Usa multipart/form-data.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [folder_id, file]
+              properties:
+                folder_id:
+                  type: integer
+                  example: 1
+                uploaded_by:
+                  type: integer
+                  nullable: true
+                  example: 1
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Documento enviado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Documento enviado com sucesso
+                  document:
+                    $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Pasta não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /documents/{id}:
+    get:
+      summary: Download de documento
+      tags: [Documents]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID do documento
+      responses:
+        '200':
+          description: Conteúdo binário do documento
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Documento não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Stephanny
+        email:
+          type: string
+          format: email
+          example: steph@example.com
+
+    Folder:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Projetos
+        created_by:
+          type: integer
+          nullable: true
+          example: 1
+
+    FolderShort:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Projetos
+
+    FolderListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Projetos
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-26T12:00:00Z"
+        created_by:
+          type: integer
+          nullable: true
+          example: 1
+        created_by_name:
+          type: string
+          nullable: true
+          example: "Stephanny"
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        folder_id:
+          type: integer
+          example: 1
+        filename:
+          type: string
+          example: contrato.pdf
+        mime_type:
+          type: string
+          example: application/pdf
+        size:
+          type: integer
+          example: 123456
+        uploaded_by:
+          type: integer
+          nullable: true
+          example: 1
+
+    DocumentListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        filename:
+          type: string
+          example: documento.docx
+        mime_type:
+          type: string
+          example: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+        size:
+          type: integer
+          example: 98765
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-11-26T12:34:56Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Mensagem de erro
+
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
