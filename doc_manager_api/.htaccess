@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /doc_manager_api/
+
+# Se o arquivo existir fisicamente, serve normal
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Senão, encaminha tudo para index.php
+RewriteRule ^ index.php [QSA,L]
