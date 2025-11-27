@@ -2,10 +2,10 @@
 // index.php – API completa de gestão de documentos
 
 // --- CORS (deve ficar no topo) ---
-header("Access-Control-Allow-Origin: *"); 
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Max-Age: 86400"); // 1 dia
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Max-Age: 86400'); // 1 dia
 
 // Pré-flight (OPTIONS) – responde e sai
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -30,6 +30,7 @@ function sendJson($data, int $statusCode = 200): void
     echo json_encode($data);
     exit;
 }
+
 
 
 function getJsonInput(): array
