@@ -1,6 +1,6 @@
 <?php
 // index.php – API completa de gestão de documentos
-declare(strict_types=1);
+//declare(strict_types=1);
 
 // --- CORS (deve ficar no topo, mas após o declare) ---
 header('Access-Control-Allow-Origin: *');
