@@ -1,6 +1,19 @@
 <?php
 // index.php – API completa de gestão de documentos
 
+// --- CORS (deve ficar no topo) ---
+header("Access-Control-Allow-Origin: *"); 
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Max-Age: 86400); // 1 dia
+
+// Pré-flight (OPTIONS) – responde e sai
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
