@@ -5,7 +5,7 @@
 header("Access-Control-Allow-Origin: *"); 
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Max-Age: 86400); // 1 dia
+header("Access-Control-Max-Age: 86400"); // 1 dia
 
 // Pré-flight (OPTIONS) – responde e sai
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
